@@ -45,9 +45,9 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
         PriceRecyclerView.setAdapter(mAdapter);
 
-        String jsonString = getIntent().getStringExtra("JSON");
+//        String jsonString = getIntent().getStringExtra("JSON");
         String link = "https://www.ebay.com/itm/Microsoft-Surface-Pro-7-12-3-Intel-Core-i5-8GB-RAM-128GB-SSD-Type-Cover/303341168365?_trkparms=5373%3A0%7C5374%3AFeatured%7C5079%3A6000001154";
-        String value = jsonString;
+        String value = "Lenovo, 950$";
         addNewRecord(value, link);
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -96,6 +96,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
     @Override
     public void onClick(String link) {
         String url = link;
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         startActivity(intent);
