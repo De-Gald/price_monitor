@@ -11,7 +11,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/logo_mlkit"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
@@ -21,21 +21,10 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <activity android:name="com.google.price.PriceHistory"/>
 
         <activity
-            android:name=".java.MainActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
-        </activity>
-
-        <activity
-            android:name=".java.LiveObjectDetectionActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".java.CornersScreenshots"/>
-
-        <activity
-            android:name=".java.LiveBarcodeScanningActivity"
+            android:name="com.google.price.LiveBarcodeScanningActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -44,44 +33,7 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".java.StaticObjectDetectionActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"></activity>
 
-        <activity
-            android:name=".java.settings.SettingsActivity"
-            android:exported="false"
-            android:label="@string/settings_title"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light"></activity>
-
-        <activity
-            android:name=".kotlin.MainActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"></activity>
-
-        <activity
-            android:name=".kotlin.LiveObjectDetectionActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"></activity>
-
-        <activity
-            android:name=".kotlin.LiveBarcodeScanningActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"></activity>
-
-        <activity
-            android:name=".kotlin.StaticObjectDetectionActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"></activity>
-
-        <activity
-            android:name=".kotlin.settings.SettingsActivity"
-            android:exported="false"
-            android:label="@string/settings_title"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light"></activity>
 
     </application>
 
