@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -16,6 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.ml.md.R;
 import com.google.price.data.PriceContract;
 import com.google.price.data.PriceDbHelper;
+
+import org.json.JSONException;
+
+import java.util.Map;
 
 
 public class PriceHistory extends AppCompatActivity implements PriceAdapter.PriceOnClickHandler {
@@ -45,10 +48,20 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
         PriceRecyclerView.setAdapter(mAdapter);
 
-//        String jsonString = getIntent().getStringExtra("JSON");
-        String link = "https://www.ebay.com/itm/Microsoft-Surface-Pro-7-12-3-Intel-Core-i5-8GB-RAM-128GB-SSD-Type-Cover/303341168365?_trkparms=5373%3A0%7C5374%3AFeatured%7C5079%3A6000001154";
-        String value = "Lenovo, 950$";
-        addNewRecord(value, link);
+        String jsonString = getIntent().getStringExtra("JSON");
+        Map<String, String> itemInfo = null;
+        try {
+            itemInfo = PriceJsonUtils.getPriceStringsFromJson(jsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (jsonString != null) {
+            String value = itemInfo.get(PriceJsonUtils.PRICE);
+            String title = itemInfo.get(PriceJsonUtils.TITLE);
+            String link_to_page = itemInfo.get(PriceJsonUtils.LINK_TO_PAGE);
+            String link_to_icon = itemInfo.get(PriceJsonUtils.LINK_TO_ICON);
+            addNewRecord(value, title, link_to_page, link_to_icon);
+        }
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -81,10 +94,12 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         );
     }
 
-    private long addNewRecord(String price, String link) {
+    private long addNewRecord(String price, String title, String link_to_page, String link_to_icon) {
         ContentValues cv = new ContentValues();
         cv.put(PriceContract.PriceEntry.COLUMN_VALUE, price);
-        cv.put(PriceContract.PriceEntry.COLUMN_LINK, link);
+        cv.put(PriceContract.PriceEntry.COLUMN_TITLE, title);
+        cv.put(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE, link_to_page);
+        cv.put(PriceContract.PriceEntry.COLUMN_LINK_TO_ICON, link_to_icon);
         return mDb.insert(PriceContract.PriceEntry.TABLE_NAME, null, cv);
     }
 

@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.ml.md.R;
 import com.google.price.data.PriceContract;
 
@@ -51,16 +52,13 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         if (!mCursor.moveToPosition(position))
             return;
 
-        new ImageLoaderClass().execute("https://i.ebayimg.com/images/g/wqYAAOSw4SJduRuU/s-l500.jpg");
-
-//        while (imageFinal == null);
-
-        String team = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_VALUE));
+        String title = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_TITLE));
+        String link_to_icon = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_ICON));
         String date = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_TIMESTAMP)).split("-")[1] + "-" + mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_TIMESTAMP)).split("-")[2];
         long id = mCursor.getLong(mCursor.getColumnIndex(PriceContract.PriceEntry._ID));
 
-        holder.itemInfo.setText(team + " - " + date);
-        holder.itemLogo.setImageBitmap(imageFinal);
+        Glide.with(mContext).load(link_to_icon).into(holder.itemLogo);
+        holder.itemInfo.setText(title + " - " + date);
         holder.itemView.setTag(id);
     }
 
@@ -93,35 +91,9 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         @Override
         public void onClick(View view) {
             mCursor.moveToPosition(getAdapterPosition());
-            String link = mCursor.getString(2);
+            String link = mCursor.getString(3);
             mPriceOnClickHandler.onClick(link);
         }
     }
 
-    Bitmap imageFinal;
-    Bitmap mImageBitmap;
-
-    private class ImageLoaderClass extends AsyncTask<String, String, Bitmap> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-        }
-        protected Bitmap doInBackground(String... args) {
-            try {
-                mImageBitmap = BitmapFactory.decodeStream((InputStream)new URL(args[0]).getContent());
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return mImageBitmap;
-        }
-
-
-
-        protected void onPostExecute(Bitmap image) {
-
-            imageFinal = image;
-        }
-    }
 }
