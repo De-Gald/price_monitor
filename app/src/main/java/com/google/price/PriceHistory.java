@@ -49,18 +49,20 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
 
         String jsonString = getIntent().getStringExtra("JSON");
-        Map<String, String> itemInfo = null;
-        try {
-            itemInfo = PriceJsonUtils.getPriceStringsFromJson(jsonString);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         if (jsonString != null) {
-            String value = itemInfo.get(PriceJsonUtils.PRICE);
-            String title = itemInfo.get(PriceJsonUtils.TITLE);
-            String link_to_page = itemInfo.get(PriceJsonUtils.LINK_TO_PAGE);
-            String link_to_icon = itemInfo.get(PriceJsonUtils.LINK_TO_ICON);
-            addNewRecord(value, title, link_to_page, link_to_icon);
+            Map<String, String> itemInfo = null;
+            try {
+                itemInfo = PriceJsonUtils.getPriceStringsFromJson(jsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (itemInfo != null) {
+                String value = itemInfo.get(PriceJsonUtils.PRICE);
+                String title = itemInfo.get(PriceJsonUtils.TITLE);
+                String link_to_page = itemInfo.get(PriceJsonUtils.LINK_TO_PAGE);
+                String link_to_icon = itemInfo.get(PriceJsonUtils.LINK_TO_ICON);
+                addNewRecord(value, title, link_to_page, link_to_icon);
+            }
         }
 
 //        String value = "105";
