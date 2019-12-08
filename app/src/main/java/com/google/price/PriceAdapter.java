@@ -2,10 +2,7 @@ package com.google.price;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +15,6 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.ml.md.R;
 import com.google.price.data.PriceContract;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-
 
 public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHolder> {
 
@@ -33,11 +26,13 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
 
     private Cursor mCursor;
     private Context mContext;
+    private int[] mItemsPriceReduced;
 
-    public PriceAdapter(Context context, Cursor cursor, PriceOnClickHandler PriceOnClickHandler) {
+    public PriceAdapter(Context context, Cursor cursor, PriceOnClickHandler PriceOnClickHandler, int[] itemsPriceReduced) {
         mPriceOnClickHandler = PriceOnClickHandler;
-        this.mContext = context;
-        this.mCursor = cursor;
+        mContext = context;
+        mCursor = cursor;
+        mItemsPriceReduced = itemsPriceReduced;
     }
 
     @Override
@@ -58,6 +53,8 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         long id = mCursor.getLong(mCursor.getColumnIndex(PriceContract.PriceEntry._ID));
 
         Glide.with(mContext).load(link_to_icon).into(holder.itemLogo);
+        if (mItemsPriceReduced[position] == 1)
+            holder.itemInfo.setTextColor(Color.GREEN);
         holder.itemInfo.setText(title + " - " + date);
         holder.itemView.setTag(id);
     }
