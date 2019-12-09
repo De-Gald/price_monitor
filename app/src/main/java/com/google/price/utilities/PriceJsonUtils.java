@@ -1,4 +1,4 @@
-package com.google.price;
+package com.google.price.utilities;
 
 import org.json.JSONException;
 import org.json.JSONObject;

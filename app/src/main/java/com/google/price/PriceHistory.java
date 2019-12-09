@@ -5,23 +5,29 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.ml.md.R;
 import com.google.price.data.PriceContract;
 import com.google.price.data.PriceDbHelper;
+import com.google.price.utilities.BackgroundWorker;
+import com.google.price.utilities.PriceJsonUtils;
+import com.google.price.utilities.Updater;
 
-import org.checkerframework.checker.units.qual.A;
 import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 public class PriceHistory extends AppCompatActivity implements PriceAdapter.PriceOnClickHandler {
@@ -65,6 +71,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
             }
         }
 
+
 //        String value = "105";
 //        String title = "Vintage Long Beach Ice Dogs Minor League ECHL Hockey Bomber Jacket Size Smal";
 //        String link_to_page = "https://www.ebay.com/itm/Vintage-Long-Beach-Ice-Dogs-Minor-League-ECHL-Hockey-Bomber-Jacket-Size-Small/153696272533?_trkparms=aid%3D333200%26algo%3DCOMP.MBE%26ao%3D1%26asc%3D20171012094517%26meid%3Dcd0f4d5385304b25b75c714a0a40d734%26pid%3D100008%26rk%3D3%26rkt%3D12%26sd%3D303334029243%26itm%3D153696272533%26pmt%3D1%26noa%3D0%26pg%3D2047675&_trksid=p2047675.c100008.m2219";
@@ -74,12 +81,15 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         int size = cursor.getCount();
         ArrayList<Float> oldPrices = new ArrayList<>();
         ArrayList<String> linksToPages = new ArrayList<>();
+
+
         for (int i = 0; i < size; i++) {
             cursor.moveToPosition(i);
             oldPrices.add(Float.valueOf(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_VALUE))));
             linksToPages.add(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE)));
         }
         cursor.moveToFirst();
+
 
         int[] itemsPriceReduced = new int[cursor.getCount()];
         Arrays.fill(itemsPriceReduced, 0);
@@ -88,6 +98,14 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         mAdapter = new PriceAdapter(this, cursor, this, itemsPriceReduced);
 
         PriceRecyclerView.setAdapter(mAdapter);
+
+        PeriodicWorkRequest saveRequest =
+                new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
+                        .setInitialDelay(20, TimeUnit.SECONDS)
+                        .build();
+
+        WorkManager.getInstance(this)
+                .enqueue(saveRequest);
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -105,6 +123,21 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
         }).attachToRecyclerView(PriceRecyclerView);
 
+    }
+
+    private class FetchPrices extends AsyncTask<ArrayList<String>, Void, ArrayList<Double>>{
+
+        @Override
+        protected ArrayList<Double> doInBackground(ArrayList<String>... arrayLists) {
+            ArrayList<Double> newPrices = Updater.update(arrayLists[0]);
+            return newPrices;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Double> doubles) {
+            super.onPostExecute(doubles);
+
+        }
     }
 
 

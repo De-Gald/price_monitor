@@ -32,6 +32,9 @@ androidExtensions {
 }
 
 dependencies {
+    def work_version = "2.2.0"
+
+    implementation "androidx.work:work-runtime:$work_version"
     implementation 'com.github.bumptech.glide:glide:3.7.0'
     implementation 'com.android.support:preference-v7:28.0.0'
     implementation 'com.android.volley:volley:1.1.1'
@@ -47,6 +50,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-ml-vision-object-detection-model:19.0.2'
 
     api 'com.google.guava:guava:27.1-jre'
+    implementation files('/Users/vladislav.de-gald/Desktop/Updater-master/lib/jsoup-1.12.1.jar')
 }
 
 apply plugin: 'com.google.gms.google-services'
