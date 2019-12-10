@@ -9,9 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-
 import androidx.core.app.NotificationCompat;
-
 import com.google.firebase.ml.md.R;
 import com.google.price.PriceHistory;
 
@@ -43,7 +41,7 @@ public class NotificationHandler {
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle(textTitle)
                 .setContentText(textContent)
-//                .setLargeIcon(largeIcon(context))
+                .setLargeIcon(largeIcon(context))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigTextContent))
                 .setContentIntent(contentIntent(context))
                 .setAutoCancel(true)
@@ -69,7 +67,7 @@ public class NotificationHandler {
 
     private static Bitmap largeIcon(Context context) {
         Resources res = context.getResources();
-        Bitmap largeIcon = BitmapFactory.decodeResource(res, R.drawable.product_img);
+        Bitmap largeIcon = BitmapFactory.decodeResource(res, R.drawable.logo);
         return largeIcon;
     }
 }

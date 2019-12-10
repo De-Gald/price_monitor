@@ -8,8 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -26,7 +24,6 @@ import com.google.price.utilities.PriceJsonUtils;
 
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +32,6 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
     private PriceAdapter mAdapter;
     private SQLiteDatabase mDb;
-    public static int count = 0;
     RecyclerView PriceRecyclerView;
 
     @Override
@@ -43,21 +39,14 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         super.onCreate(savedInstanceState);
         setContentView(R.layout.price_history);
 
-
-        count = count + 1;
-
         PriceRecyclerView = (RecyclerView) this.findViewById(R.id.corners_list_view);
-
         PriceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-
+        //initialize connection to database
         PriceDbHelper dbHelper = new PriceDbHelper(this);
-
         mDb = dbHelper.getWritableDatabase();
 
-        Cursor cursor = getAllPriceData();
-
-
+        //add monitored item to the database
         String jsonString = getIntent().getStringExtra("JSON");
         if (jsonString != null) {
             Map<String, String> itemInfo = null;
@@ -75,48 +64,28 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
             }
         }
 
-
-//        String value = "105";
-//        String title = "Vintage Long Beach Ice Dogs Minor League ECHL Hockey Bomber Jacket Size Smal";
-//        String link_to_page = "https://www.ebay.com/itm/Vintage-Long-Beach-Ice-Dogs-Minor-League-ECHL-Hockey-Bomber-Jacket-Size-Small/153696272533?_trkparms=aid%3D333200%26algo%3DCOMP.MBE%26ao%3D1%26asc%3D20171012094517%26meid%3Dcd0f4d5385304b25b75c714a0a40d734%26pid%3D100008%26rk%3D3%26rkt%3D12%26sd%3D303334029243%26itm%3D153696272533%26pmt%3D1%26noa%3D0%26pg%3D2047675&_trksid=p2047675.c100008.m2219";
-//        String link_to_icon = "https://i.ebayimg.com/images/g/4JQAAOSwOYZdsUWJ/s-l500.jpg";
-//        addNewRecord(value, title, link_to_page, link_to_icon);
-
-        int size = cursor.getCount();
-        ArrayList<Float> oldPrices = new ArrayList<>();
-        ArrayList<String> linksToPages = new ArrayList<>();
-
-
-        for (int i = 0; i < size; i++) {
-            cursor.moveToPosition(i);
-            oldPrices.add(Float.valueOf(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_VALUE))));
-            linksToPages.add(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE)));
-        }
-        cursor.moveToFirst();
-
-
+        //display database in RecyclerView
+        Cursor cursor = getAllPriceData();
         mAdapter = new PriceAdapter(this, cursor, this);
-
         PriceRecyclerView.setAdapter(mAdapter);
 
-
+        //schedule notifications in background
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
             PeriodicWorkRequest saveRequest =
                     new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
-                            .setInitialDelay(90, TimeUnit.SECONDS)
+                            .setInitialDelay(60, TimeUnit.SECONDS)
                             .build();
-
             WorkManager.getInstance(this)
                     .enqueue(saveRequest);
+
+            sharedPreferences.edit()
+                    .putBoolean("NOTIFICATION_STARTER", true)
+                    .apply();
         }
 
 
-        sharedPreferences.edit()
-                .putBoolean("NOTIFICATION_STARTER", true)
-                .apply();
-
-
+        //add swipe actions to RecyclerView
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
             @Override
@@ -137,8 +106,6 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
     }
 
-
-
     private Cursor getAllPriceData() {
         return mDb.query(
                 PriceContract.PriceEntry.TABLE_NAME,
@@ -147,7 +114,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
                 null,
                 null,
                 null,
-                PriceContract.PriceEntry.COLUMN_TIMESTAMP
+                null
         );
     }
 
@@ -160,31 +127,31 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         return mDb.insert(PriceContract.PriceEntry.TABLE_NAME, null, cv);
     }
 
-
     private boolean removePriceRecord(long id) {
         return mDb.delete(PriceContract.PriceEntry.TABLE_NAME, PriceContract.PriceEntry._ID + "=" + id, null) > 0;
     }
 
     @Override
     public void onClick(String link, int position) {
+        //change the color of clicked record
         ContentValues cv = new ContentValues();
         cv.put(PriceContract.PriceEntry.COLUMN_PRICE_UPDATED, 0);
 
         Cursor cursor = getAllPriceData();
         cursor.moveToPosition(position);
+
         int id = cursor.getInt(cursor.getColumnIndex(PriceContract.PriceEntry._ID));
+        mDb.update(PriceContract.PriceEntry.TABLE_NAME, cv, PriceContract.PriceEntry._ID + "=" + id, null);
 
-        String whereClause = PriceContract.PriceEntry._ID + "=" + id;
-
-        mDb.update(PriceContract.PriceEntry.TABLE_NAME, cv, whereClause, null);
-
+        //renew data in RecyclerView
         mAdapter = new PriceAdapter(PriceHistory.this, getAllPriceData(), PriceHistory.this);
-
         PriceRecyclerView.setAdapter(mAdapter);
 
+        //open item's link in a browser
         String url = link;
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         startActivity(intent);
     }
+
 }

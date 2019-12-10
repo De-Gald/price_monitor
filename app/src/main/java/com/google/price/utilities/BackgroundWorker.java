@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -14,7 +13,7 @@ import com.google.price.data.PriceContract;
 import com.google.price.data.PriceDbHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
 
 public class BackgroundWorker extends Worker {
     Context context = null;
@@ -35,35 +34,38 @@ public class BackgroundWorker extends Worker {
         Cursor cursor = getAllPriceData();
 
         int size = cursor.getCount();
-        ArrayList<Float> oldPrices = new ArrayList<>();
-        ArrayList<String> linksToPages = new ArrayList<>();
-        ArrayList<Integer> ids = new ArrayList<>();
 
-        for (int i = 0; i < size; i++) {
-            cursor.moveToPosition(i);
-            ids.add(cursor.getInt(cursor.getColumnIndex(PriceContract.PriceEntry._ID)));
-            oldPrices.add(Float.valueOf(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_VALUE))));
-            linksToPages.add(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE)));
-        }
-        cursor.moveToFirst();
-        oldPrices.set(0, (float) 1000);
-        oldPrices.set(1, (float) 1000);
-        ArrayList<Float> newPrices = Updater.update(linksToPages);
+        if (size != 0) {
+            ArrayList<Float> oldPrices = new ArrayList<>();
+            ArrayList<String> linksToPages = new ArrayList<>();
+            ArrayList<Integer> ids = new ArrayList<>();
 
-        ArrayList<Integer> itemsPriceReduced = new ArrayList<>();
-        boolean flag = false;
-        for (int i = 0; i < newPrices.size(); i++) {
-            if (newPrices.get(i) < oldPrices.get(i)) {
-                itemsPriceReduced.add(ids.get(i));
-                flag = true;
+            for (int i = 0; i < size; i++) {
+                cursor.moveToPosition(i);
+                ids.add(cursor.getInt(cursor.getColumnIndex(PriceContract.PriceEntry._ID)));
+                oldPrices.add(Float.valueOf(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_VALUE))));
+                linksToPages.add(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE)));
             }
-        }
 
-        for (Integer id: itemsPriceReduced){
-            updateValue(id);
+            //mock data to test notifications
+            oldPrices.set(0, (float) 1000);
+
+            //fetching new prices
+            ArrayList<Float> newPrices = Updater.update(linksToPages);
+
+            //check if prices have changed
+            boolean flag = false;
+            for (int i = 0; i < newPrices.size(); i++) {
+                if (newPrices.get(i) < oldPrices.get(i)) {
+                    updateValue(ids.get(i), newPrices.get(i));
+                    flag = true;
+                }
+            }
+
+            //if prices have changed, show notification
+            if (flag)
+                NotificationHandler.priceDropedNotification(context);
         }
-        if (flag)
-            NotificationHandler.priceDropedNotification(context);
         return Result.success();
     }
 
@@ -76,14 +78,22 @@ public class BackgroundWorker extends Worker {
                 null,
                 null,
                 PriceContract.PriceEntry.COLUMN_TIMESTAMP
+
         );
     }
 
-    private void updateValue(int position) {
+    private void updateValue(int position, Float newPrice) {
+        //update time of an record with changed price
+        Calendar calendar = Calendar.getInstance();
+        java.util.Date now = calendar.getTime();
+        java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());
+        String time = currentTimestamp.toString();
+
         ContentValues cv = new ContentValues();
         cv.put(PriceContract.PriceEntry.COLUMN_PRICE_UPDATED, 1);
-        String whereClause = PriceContract.PriceEntry._ID + "=" + position;
-        String[] args = new String[]{String.valueOf(2)};
-        mDb.update(PriceContract.PriceEntry.TABLE_NAME, cv, whereClause, null);
+        cv.put(PriceContract.PriceEntry.COLUMN_TIMESTAMP, time);
+        cv.put(PriceContract.PriceEntry.COLUMN_VALUE, newPrice);
+
+        mDb.update(PriceContract.PriceEntry.TABLE_NAME, cv, PriceContract.PriceEntry._ID + "=" + position, null);
     }
 }

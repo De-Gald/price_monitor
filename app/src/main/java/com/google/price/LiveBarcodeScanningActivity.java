@@ -16,9 +16,11 @@
 
 package com.google.price;
 
+import android.Manifest;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,6 +28,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.material.chip.Chip;
@@ -61,6 +65,10 @@ public class LiveBarcodeScanningActivity extends AppCompatActivity implements On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 100);
 
         setContentView(R.layout.activity_live_barcode);
         preview = findViewById(R.id.camera_preview);
@@ -216,9 +224,6 @@ public class LiveBarcodeScanningActivity extends AppCompatActivity implements On
                         Intent intent = new Intent(LiveBarcodeScanningActivity.this, PriceHistory.class);
                         intent.putExtra("JSON", barcode.getRawValue());
                         startActivity(intent);
-//            ArrayList<BarcodeField> barcodeFieldList = new ArrayList<>();
-//            barcodeFieldList.add(new BarcodeField("Raw Value", barcode.getRawValue()));
-//            BarcodeResultFragment.show(getSupportFragmentManager(), barcodeFieldList);
                     }
                 });
     }

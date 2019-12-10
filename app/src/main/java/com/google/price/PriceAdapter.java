@@ -15,8 +15,6 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.ml.md.R;
 import com.google.price.data.PriceContract;
 
-import java.util.Arrays;
-
 
 public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHolder> {
 
@@ -44,8 +42,7 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
 
     @Override
     public void onBindViewHolder(PriceViewHolder holder, int position) {
-        if (!mCursor.moveToPosition(position))
-            return;
+        if (!mCursor.moveToPosition(position)) return;
 
         String title = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_TITLE));
         String link_to_icon = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_ICON));
@@ -53,8 +50,10 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         long id = mCursor.getLong(mCursor.getColumnIndex(PriceContract.PriceEntry._ID));
         int priceUpdated = mCursor.getInt(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_PRICE_UPDATED));
 
-        if (priceUpdated ==1)
+        //change the color of an item if price has changed
+        if (priceUpdated == 1)
             holder.itemInfo.setTextColor(Color.GREEN);
+
         Glide.with(mContext).load(link_to_icon).into(holder.itemLogo);
         holder.itemInfo.setText(title + " - " + date);
         holder.itemView.setTag(id);
@@ -66,13 +65,6 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         return mCursor.getCount();
     }
 
-    public void swapCursor(Cursor newCursor) {
-        if (mCursor != null) mCursor.close();
-        mCursor = newCursor;
-        if (newCursor != null) {
-            this.notifyDataSetChanged();
-        }
-    }
 
     class PriceViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -89,7 +81,7 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         @Override
         public void onClick(View view) {
             mCursor.moveToPosition(getAdapterPosition());
-            String link = mCursor.getString(3);
+            String link = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE));
             mPriceOnClickHandler.onClick(link, getAdapterPosition());
         }
     }
