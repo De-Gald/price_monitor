@@ -20,7 +20,7 @@ public final class PriceJsonUtils {
         JSONObject priceJson = new JSONObject(priceJsonStr);
 
         String price = priceJson.getString("price");
-        String title = priceJson.getString("title").split("Details about")[1];
+        String title = priceJson.getString("title").replace("Details about", "");
         String link_to_page = priceJson.getString("link");
         String link_to_icon = priceJson.getString("imageLink");
 

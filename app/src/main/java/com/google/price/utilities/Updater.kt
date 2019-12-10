@@ -13,8 +13,8 @@ class Updater {
         )
 
         @JvmStatic
-        fun update(array: ArrayList<String>): ArrayList<Double> {
-            var result = ArrayList<Double>()
+        fun update(array: ArrayList<String>): ArrayList<Float> {
+            var result = ArrayList<Float>()
             for (element in array) run {
                 var currentSite: ConfigObject? =
                     config.find { configObject -> element.contains(configObject.link, ignoreCase = true) } ?: return@run
@@ -22,10 +22,10 @@ class Updater {
                     // First select price
                     var r = Regex("[0-9]+(\\.[0-9]*)*")
                     try {
-                        var price: Double =  r.find(select(currentSite!!.selector)[0].text())!!.value.toDouble()
+                        var price: Float =  r.find(select(currentSite!!.selector)[0].text())!!.value.toFloat()
                         result.add(price)
                     } catch (e: Exception) {
-                        result.add(-1.0)
+                        result.add((-1.0).toFloat())
                     }
                 }
             }

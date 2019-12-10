@@ -2,11 +2,14 @@ package com.google.price;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -20,12 +23,10 @@ import com.google.price.data.PriceContract;
 import com.google.price.data.PriceDbHelper;
 import com.google.price.utilities.BackgroundWorker;
 import com.google.price.utilities.PriceJsonUtils;
-import com.google.price.utilities.Updater;
 
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
     private PriceAdapter mAdapter;
     private SQLiteDatabase mDb;
+    public static int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         setContentView(R.layout.price_history);
 
         RecyclerView PriceRecyclerView;
+        count = count + 1;
 
         PriceRecyclerView = (RecyclerView) this.findViewById(R.id.corners_list_view);
 
@@ -91,21 +94,27 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         cursor.moveToFirst();
 
 
-        int[] itemsPriceReduced = new int[cursor.getCount()];
-        Arrays.fill(itemsPriceReduced, 0);
-        itemsPriceReduced[0] = 1;
-
-        mAdapter = new PriceAdapter(this, cursor, this, itemsPriceReduced);
+        mAdapter = new PriceAdapter(this, cursor, this);
 
         PriceRecyclerView.setAdapter(mAdapter);
 
-        PeriodicWorkRequest saveRequest =
-                new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
-                        .setInitialDelay(20, TimeUnit.SECONDS)
-                        .build();
 
-        WorkManager.getInstance(this)
-                .enqueue(saveRequest);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
+            PeriodicWorkRequest saveRequest =
+                    new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
+                            .setInitialDelay(20, TimeUnit.SECONDS)
+                            .build();
+
+            WorkManager.getInstance(this)
+                    .enqueue(saveRequest);
+        }
+
+
+        sharedPreferences.edit()
+                .putBoolean("NOTIFICATION_STARTER", true)
+                .apply();
+
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -118,27 +127,15 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 long id = (long) viewHolder.itemView.getTag();
                 removePriceRecord(id);
-                mAdapter.swapCursor(getAllPriceData());
+                mAdapter = new PriceAdapter(PriceHistory.this, getAllPriceData(), PriceHistory.this);
+
+                PriceRecyclerView.setAdapter(mAdapter);
             }
 
         }).attachToRecyclerView(PriceRecyclerView);
 
     }
 
-    private class FetchPrices extends AsyncTask<ArrayList<String>, Void, ArrayList<Double>>{
-
-        @Override
-        protected ArrayList<Double> doInBackground(ArrayList<String>... arrayLists) {
-            ArrayList<Double> newPrices = Updater.update(arrayLists[0]);
-            return newPrices;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Double> doubles) {
-            super.onPostExecute(doubles);
-
-        }
-    }
 
 
     private Cursor getAllPriceData() {

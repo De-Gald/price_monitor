@@ -15,6 +15,8 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.ml.md.R;
 import com.google.price.data.PriceContract;
 
+import java.util.Arrays;
+
 
 public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHolder> {
 
@@ -26,13 +28,11 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
 
     private Cursor mCursor;
     private Context mContext;
-    private int[] mItemsPriceReduced;
 
-    public PriceAdapter(Context context, Cursor cursor, PriceOnClickHandler PriceOnClickHandler, int[] itemsPriceReduced) {
+    public PriceAdapter(Context context, Cursor cursor, PriceOnClickHandler PriceOnClickHandler) {
         mPriceOnClickHandler = PriceOnClickHandler;
         mContext = context;
         mCursor = cursor;
-        mItemsPriceReduced = itemsPriceReduced;
     }
 
     @Override
@@ -51,10 +51,11 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         String link_to_icon = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_ICON));
         String date = mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_TIMESTAMP)).split("-")[1] + "-" + mCursor.getString(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_TIMESTAMP)).split("-")[2];
         long id = mCursor.getLong(mCursor.getColumnIndex(PriceContract.PriceEntry._ID));
+        int priceUpdated = mCursor.getInt(mCursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_PRICE_UPDATED));
 
-        Glide.with(mContext).load(link_to_icon).into(holder.itemLogo);
-        if (mItemsPriceReduced[position] == 1)
+        if (priceUpdated ==1)
             holder.itemInfo.setTextColor(Color.GREEN);
+        Glide.with(mContext).load(link_to_icon).into(holder.itemLogo);
         holder.itemInfo.setText(title + " - " + date);
         holder.itemView.setTag(id);
     }
