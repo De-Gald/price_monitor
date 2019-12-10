@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHolder> {
 
     public interface PriceOnClickHandler {
-        void onClick(String pathToFile);
+        void onClick(String pathToFile, int position);
     }
 
     private PriceOnClickHandler mPriceOnClickHandler;
@@ -90,7 +90,7 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
         public void onClick(View view) {
             mCursor.moveToPosition(getAdapterPosition());
             String link = mCursor.getString(3);
-            mPriceOnClickHandler.onClick(link);
+            mPriceOnClickHandler.onClick(link, getAdapterPosition());
         }
     }
 

@@ -36,13 +36,14 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
     private PriceAdapter mAdapter;
     private SQLiteDatabase mDb;
     public static int count = 0;
+    RecyclerView PriceRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.price_history);
 
-        RecyclerView PriceRecyclerView;
+
         count = count + 1;
 
         PriceRecyclerView = (RecyclerView) this.findViewById(R.id.corners_list_view);
@@ -103,7 +104,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
             PeriodicWorkRequest saveRequest =
                     new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
-                            .setInitialDelay(20, TimeUnit.SECONDS)
+                            .setInitialDelay(90, TimeUnit.SECONDS)
                             .build();
 
             WorkManager.getInstance(this)
@@ -165,9 +166,23 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
     }
 
     @Override
-    public void onClick(String link) {
-        String url = link;
+    public void onClick(String link, int position) {
+        ContentValues cv = new ContentValues();
+        cv.put(PriceContract.PriceEntry.COLUMN_PRICE_UPDATED, 0);
 
+        Cursor cursor = getAllPriceData();
+        cursor.moveToPosition(position);
+        int id = cursor.getInt(cursor.getColumnIndex(PriceContract.PriceEntry._ID));
+
+        String whereClause = PriceContract.PriceEntry._ID + "=" + id;
+
+        mDb.update(PriceContract.PriceEntry.TABLE_NAME, cv, whereClause, null);
+
+        mAdapter = new PriceAdapter(PriceHistory.this, getAllPriceData(), PriceHistory.this);
+
+        PriceRecyclerView.setAdapter(mAdapter);
+
+        String url = link;
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         startActivity(intent);

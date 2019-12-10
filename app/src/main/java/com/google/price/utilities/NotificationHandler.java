@@ -20,8 +20,8 @@ public class NotificationHandler {
     private static final int PENDING_INTENT_ID = 2;
     private static String CHANNEL_ID = "price_drop";
     private static String textTitle = "Price drop";
-    private static String textContent = "Some text content, to show on notification display...";
-    private static String bigTextContent = "Some text content, to show on notification display, including a huge number of other informations on that notification.";
+    private static String textContent = "The price of some selected items was reduced";
+    private static String bigTextContent = "Click on highlighted item to see up-to-date price";
 
     public static void priceDropedNotification(Context context) {
         NotificationManager notificationManager = (NotificationManager)
@@ -43,7 +43,7 @@ public class NotificationHandler {
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle(textTitle)
                 .setContentText(textContent)
-                .setLargeIcon(largeIcon(context))
+//                .setLargeIcon(largeIcon(context))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigTextContent))
                 .setContentIntent(contentIntent(context))
                 .setAutoCancel(true)
