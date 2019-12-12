@@ -26,7 +26,7 @@ public class PriceDbHelper extends SQLiteOpenHelper {
                 PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE + " STRING NOT NULL, " +
                 PriceContract.PriceEntry.COLUMN_LINK_TO_ICON + " STRING NOT NULL, " +
                 PriceContract.PriceEntry.COLUMN_PRICE_UPDATED + " INTEGER DEFAULT 0, " +
-                PriceContract.PriceEntry.COLUMN_TIMESTAMP + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                PriceContract.PriceEntry.COLUMN_TIMESTAMP + " TIMESTAMP" +
                 "); ";
         sqLiteDatabase.execSQL(SQL_CREATE_PRICE_TABLE);
     }

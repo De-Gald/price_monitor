@@ -47,9 +47,6 @@ public class BackgroundWorker extends Worker {
                 linksToPages.add(cursor.getString(cursor.getColumnIndex(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE)));
             }
 
-            //mock data to test notifications
-            oldPrices.set(0, (float) 1000);
-
             //fetching new prices
             ArrayList<Float> newPrices = Updater.update(linksToPages);
 
@@ -77,7 +74,7 @@ public class BackgroundWorker extends Worker {
                 null,
                 null,
                 null,
-                PriceContract.PriceEntry.COLUMN_TIMESTAMP
+                PriceContract.PriceEntry._ID
 
         );
     }

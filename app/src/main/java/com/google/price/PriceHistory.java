@@ -24,6 +24,7 @@ import com.google.price.utilities.PriceJsonUtils;
 
 import org.json.JSONException;
 
+import java.util.Calendar;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -71,7 +72,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
         //schedule notifications in background
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
+//        if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
             PeriodicWorkRequest saveRequest =
                     new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
                             .setInitialDelay(60, TimeUnit.SECONDS)
@@ -82,7 +83,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
             sharedPreferences.edit()
                     .putBoolean("NOTIFICATION_STARTER", true)
                     .apply();
-        }
+//        }
 
 
         //add swipe actions to RecyclerView
@@ -114,16 +115,22 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
                 null,
                 null,
                 null,
-                null
+                PriceContract.PriceEntry._ID
         );
     }
 
     private long addNewRecord(String price, String title, String link_to_page, String link_to_icon) {
+        Calendar calendar = Calendar.getInstance();
+        java.util.Date now = calendar.getTime();
+        java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());
+        String time = currentTimestamp.toString();
+
         ContentValues cv = new ContentValues();
         cv.put(PriceContract.PriceEntry.COLUMN_VALUE, price);
         cv.put(PriceContract.PriceEntry.COLUMN_TITLE, title);
         cv.put(PriceContract.PriceEntry.COLUMN_LINK_TO_PAGE, link_to_page);
         cv.put(PriceContract.PriceEntry.COLUMN_LINK_TO_ICON, link_to_icon);
+        cv.put(PriceContract.PriceEntry.COLUMN_TIMESTAMP, time);
         return mDb.insert(PriceContract.PriceEntry.TABLE_NAME, null, cv);
     }
 

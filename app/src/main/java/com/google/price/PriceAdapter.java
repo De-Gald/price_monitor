@@ -55,7 +55,9 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
             holder.itemInfo.setTextColor(Color.GREEN);
 
         Glide.with(mContext).load(link_to_icon).into(holder.itemLogo);
-        holder.itemInfo.setText(title + " - " + date);
+//        holder.itemInfo.setText(title + " - " + date);
+        holder.itemInfo.setText(title);
+        holder.updateTime.setText(date);
         holder.itemView.setTag(id);
     }
 
@@ -70,11 +72,13 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.PriceViewHol
 
         TextView itemInfo;
         ImageView itemLogo;
+        TextView updateTime;
 
         public PriceViewHolder(View itemView) {
             super(itemView);
             itemInfo = (TextView) itemView.findViewById(R.id.item_text_view);
             itemLogo = (ImageView) itemView.findViewById(R.id.logo_image_view);
+            updateTime = (TextView) itemView.findViewById(R.id.updateTime);
             itemView.setOnClickListener(this);
         }
 
