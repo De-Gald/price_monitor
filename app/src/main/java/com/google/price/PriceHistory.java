@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
-public class PriceHistory extends AppCompatActivity implements PriceAdapter.PriceOnClickHandler {
+public class PriceHistory extends AppCompatActivity implements PriceAdapter.PriceOnClickHandler, View.OnClickListener {
 
     private PriceAdapter mAdapter;
     private SQLiteDatabase mDb;
@@ -39,6 +40,9 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.price_history);
+
+        findViewById(R.id.back_to_camera_button).setOnClickListener(this);
+        findViewById(R.id.refresh_button).setOnClickListener(this);
 
         PriceRecyclerView = (RecyclerView) this.findViewById(R.id.corners_list_view);
         PriceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -72,10 +76,10 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
 
         //schedule notifications in background
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
+        if (!sharedPreferences.getBoolean("NOTIFICATION_STARTER", false)) {
             PeriodicWorkRequest saveRequest =
                     new PeriodicWorkRequest.Builder(BackgroundWorker.class, 15, TimeUnit.MINUTES)
-                            .setInitialDelay(60, TimeUnit.SECONDS)
+                            .setInitialDelay(15, TimeUnit.SECONDS)
                             .build();
             WorkManager.getInstance(this)
                     .enqueue(saveRequest);
@@ -83,7 +87,7 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
             sharedPreferences.edit()
                     .putBoolean("NOTIFICATION_STARTER", true)
                     .apply();
-//        }
+        }
 
 
         //add swipe actions to RecyclerView
@@ -161,4 +165,15 @@ public class PriceHistory extends AppCompatActivity implements PriceAdapter.Pric
         startActivity(intent);
     }
 
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.back_to_camera_button) {
+            Intent intent = new Intent(PriceHistory.this, LiveBarcodeScanningActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.refresh_button) {
+            mAdapter = new PriceAdapter(PriceHistory.this, getAllPriceData(), PriceHistory.this);
+            PriceRecyclerView.setAdapter(mAdapter);
+        }
+    }
 }

@@ -6,9 +6,16 @@
     android:orientation="vertical"
     tools:context="com.google.price.PriceHistory">
 
+    <include
+        layout="@layout/action_bar_in_price_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/corners_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 
 </LinearLayout>
